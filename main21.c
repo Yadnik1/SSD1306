@@ -8,7 +8,7 @@
 #include "driver/include/m2m_wifi.h"
 #include "main.h"
 #include "stdio_serial.h"
-#include "ssd1306.h"  // Include the header for the SSD1306
+#include "ssd1306.h" 
 #define DISPLAY_TASK_STACK_SIZE (512U)
 static uint8_t SSD1306_Buffer[SSD1306_WIDTH * SSD1306_HEIGHT / 8];
 /****
@@ -91,14 +91,27 @@ static void StartTasks(void) {
 static void DisplayTask(void *pvParameters) {
 	if (SSD1306_Init() != 1) {
 		SerialConsoleWriteString("SSD1306 Initialization failed!\r\n");
-		vTaskDelete(NULL); // Terminate this task if we can't initialize the display
+		vTaskDelete(NULL);
 	}
 
 	while (1) {
+		SerialConsoleWriteString("Clearing display buffer.\r\n");
 		SSD1306_Fill(SSD1306_COLOR_BLACK);
+
+		SerialConsoleWriteString("Setting cursor position.\r\n");
 		SSD1306_GotoXY(10, 25);
+
+		SerialConsoleWriteString("Writing text to display buffer.\r\n");
 		SSD1306_Puts("LogicNinjas", &Font_11x18, SSD1306_COLOR_WHITE);
+
+		SerialConsoleWriteString("Filling rest of display buffer for pattern.\r\n");
+		for (int i = 0; i < sizeof(SSD1306_Buffer); i++) {
+			SSD1306_Buffer[i] = 0xAA;
+		}
+
+		SerialConsoleWriteString("Sending display buffer to screen.\r\n");
 		SSD1306_UpdateScreen();
+
 		vTaskDelay(pdMS_TO_TICKS(1000));
 	}
 }
@@ -113,3 +126,4 @@ void vApplicationStackOverflowHook(void) {
 }
 
 void vApplicationTickHook(void) { SysTick_Handler_MQTT(); }
+
