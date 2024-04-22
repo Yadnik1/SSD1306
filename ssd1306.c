@@ -18,13 +18,15 @@ typedef struct {
 static SSD1306_t SSD1306;
 
 void SSD1306_WRITECOMMAND(uint8_t command) {
+	SerialConsoleWriteString("SSD1306: Writing command to I2C...\r\n");
 	I2C_Data i2cData;
 	i2cData.address = SSD1306_I2C_ADDR;
 	i2cData.msgOut = &command;
 	i2cData.lenOut = 1;
-	I2cWriteData(&i2cData);
+	if (I2cWriteData(&i2cData) != ERROR_NONE) {
+		SerialConsoleWriteString("SSD1306: Error writing command to I2C.\r\n");
+	}
 }
-
 static void SSD1306_WriteMulti(uint8_t *buffer, size_t buffer_size) {
 	I2C_Data i2cData;
 	i2cData.address = SSD1306_I2C_ADDR;
@@ -458,16 +460,21 @@ void SSD1306_DrawFilledCircle(int16_t x0, int16_t y0, int16_t r, SSD1306_COLOR_t
 }
 
 void SSD1306_ON(void) {
+	SerialConsoleWriteString("SSD1306: Turning display ON...\r\n");
 	SSD1306_WRITECOMMAND(0x8D);
 	vTaskDelay(pdMS_TO_TICKS(10));
 	SSD1306_WRITECOMMAND(0x14);
 	vTaskDelay(pdMS_TO_TICKS(10));
 	SSD1306_WRITECOMMAND(0xAF);
+	SerialConsoleWriteString("SSD1306: Display is ON.\r\n");
 }
 void SSD1306_OFF(void) {
+	SerialConsoleWriteString("SSD1306: Turning display OFF...\r\n");
 	SSD1306_WRITECOMMAND(0x8D);
 	vTaskDelay(pdMS_TO_TICKS(10));
 	SSD1306_WRITECOMMAND(0x10);
 	vTaskDelay(pdMS_TO_TICKS(10));
 	SSD1306_WRITECOMMAND(0xAE);
+	SerialConsoleWriteString("SSD1306: Display is OFF.\r\n");
 }
+
